@@ -1,42 +1,46 @@
 const socket = new WebSocket("wss://ballistic-autumn-cockatoo.glitch.me");
 
-// When WebSocket connection is opened
 socket.onopen = () => {
     console.log("Connected to WebSocket server");
     displayStatus("You are now connected!");
 };
 
-// Handling messages received from the server
 socket.onmessage = async (event) => {
-    let message;
+    let message = event.data instanceof Blob ? await event.data.text() : event.data;
 
-    if (event.data instanceof Blob) {
-        message = await event.data.text(); // Convert Blob to text
+    if (message === "typing...") {
+        document.getElementById("typingIndicator").style.display = "block";
+        return; // Don't show "typing..." as a message
     } else {
-        message = event.data.toString(); // Ensure it's treated as a string
+        document.getElementById("typingIndicator").style.display = "none"; // Hide when message arrives
     }
 
-    processMessage(message);
+    if (message === "You are now connected!") {
+        isConnected = true;
+        displayStatus("You are now connected!");
+    } else if (message === "Your partner has disconnected.") {
+        isConnected = false;
+        displayStatus("Your partner has disconnected.");
+    } else {
+        displayMessage("Stranger", message, "received");
+    }
 };
 
-// Handling WebSocket closure
 socket.onclose = () => {
     displayStatus("Disconnected from server.");
 };
 
-// Function to process the received message
-function processMessage(message) {
-    if (message === "You are now connected!") {
-        isConnected = true;
-        displayStatus(message);
-    } else if (message === "Waiting for a partner to connect...") {
-        displayStatus(message);
-    } else if (message === "Your partner has disconnected.") {
-        isConnected = false;
-        displayStatus(message);
-    } else {
-        displayMessage("Stranger", message);
+// Send "typing..." status when user starts typing
+document.getElementById("messageInput").addEventListener("input", () => {
+    if (socket.readyState === WebSocket.OPEN) {
+        socket.send("typing...");
     }
+});
+
+// Disconnect function
+function disconnect() {
+    socket.close(); // Close WebSocket connection
+    displayStatus("You have disconnected.");
 }
 
 // Sending messages
@@ -51,15 +55,16 @@ function sendMessage() {
     const input = document.getElementById("messageInput");
     if (input.value.trim() !== "") {
         socket.send(input.value);
-        displayMessage("You", input.value);
+        displayMessage("You", input.value, "sent");
         input.value = "";
     }
 }
 
 // Function to display messages in the chat
-function displayMessage(sender, message) {
+function displayMessage(sender, message, type) {
     const chatBox = document.getElementById("chatBox");
     const messageElement = document.createElement("p");
+    messageElement.classList.add("message", type);
     messageElement.textContent = `${sender}: ${message}`;
     chatBox.appendChild(messageElement);
     chatBox.scrollTop = chatBox.scrollHeight;
