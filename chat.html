@@ -39,55 +39,98 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        button {
+        .send-btn, .connect-btn {
             padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            color: white;
         }
-        button:hover {
+        .send-btn {
+            background-color: #4CAF50;
+        }
+        .send-btn:hover {
             background-color: #45a049;
+        }
+        .connect-btn {
+            background-color: red;
+        }
+        .connect-btn.connected {
+            background-color: green;
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <h2>AnonTalk Chat</h2>
-        <div class="messages" id="messages"></div>
+        <div class="messages" id="messages">
+            <p><em>Waiting for a partner to connect...</em></p>
+        </div>
         <input type="text" id="messageInput" placeholder="Type a message..." />
-        <button onclick="sendMessage()">Send</button>
+        <button class="send-btn" onclick="sendMessage()">Send</button>
+        <button id="connectBtn" class="connect-btn" onclick="toggleConnection()">Disconnect</button>
     </div>
 
     <script>
-        // Connect to WebSocket server
-        const socket = new WebSocket("wss://ballistic-autumn-cockatoo.glitch.me");
+        let socket;
+        let isConnected = false;
 
-        socket.onopen = function () {
-            console.log("Connected to WebSocket server");
-            document.getElementById("messages").innerHTML += "<p><em>Connected to chat</em></p>";
-        };
+        function connectToServer() {
+            socket = new WebSocket("wss://ballistic-autumn-cockatoo.glitch.me");
 
-        socket.onmessage = function (event) {
-            const messagesDiv = document.getElementById("messages");
-            messagesDiv.innerHTML += `<p>${event.data}</p>`;
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        };
+            socket.onopen = function () {
+                console.log("Connected to WebSocket server");
+                document.getElementById("messages").innerHTML = "<p><em>Connected to chat. Finding a partner...</em></p>";
+                document.getElementById("connectBtn").innerText = "Disconnect";
+                document.getElementById("connectBtn").classList.add("connected");
+                isConnected = true;
+            };
 
-        socket.onclose = function () {
-            console.log("Disconnected from WebSocket server");
-            document.getElementById("messages").innerHTML += "<p><em>Disconnected</em></p>";
-        };
+            socket.onmessage = function (event) {
+                const messagesDiv = document.getElementById("messages");
+                
+                if (event.data === "partner_disconnected") {
+                    messagesDiv.innerHTML += "<p><em>Your partner has disconnected.</em></p>";
+                    document.getElementById("connectBtn").innerText = "Connect";
+                    document.getElementById("connectBtn").classList.remove("connected");
+                    isConnected = false;
+                } else {
+                    messagesDiv.innerHTML += `<p>${event.data}</p>`;
+                }
+
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            };
+
+            socket.onclose = function () {
+                console.log("Disconnected from WebSocket server");
+                document.getElementById("messages").innerHTML += "<p><em>Disconnected</em></p>";
+                document.getElementById("connectBtn").innerText = "Connect";
+                document.getElementById("connectBtn").classList.remove("connected");
+                isConnected = false;
+            };
+        }
 
         function sendMessage() {
             const input = document.getElementById("messageInput");
-            if (input.value.trim() !== "") {
+            if (input.value.trim() !== "" && isConnected) {
                 socket.send(input.value);
                 document.getElementById("messages").innerHTML += `<p><strong>You:</strong> ${input.value}</p>`;
                 input.value = "";
             }
         }
+
+        function toggleConnection() {
+            if (isConnected) {
+                socket.send("partner_disconnected"); // Notify partner
+                socket.close(); // Disconnect from server
+            } else {
+                document.getElementById("messages").innerHTML = "<p><em>Waiting for a partner to connect...</em></p>";
+                connectToServer(); // Reconnect to server and find new partner
+            }
+        }
+
+        // Initial connection
+        connectToServer();
     </script>
 </body>
 </html>
