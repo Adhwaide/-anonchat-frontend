@@ -76,7 +76,7 @@
         let isConnected = false;
 
         function connectToServer() {
-            const socket = new WebSocket("wss://anonchat-frontend-production.up.railway.app");
+            const socket = new WebSocket("wss://anonchat-frontend-production.up.railway.app:8080");
 
             socket.onopen = function () {
                 console.log("Connected to WebSocket server");
