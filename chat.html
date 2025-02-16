@@ -76,7 +76,6 @@
         let isConnected = false;
 
         function connectToServer() {
-            socket = new WebSocket("wss://ballistic-autumn-cockatoo.glitch.me");
             const socket = new WebSocket("wss://anonchat-frontend-production.up.railway.app");
 
             socket.onopen = function () {
