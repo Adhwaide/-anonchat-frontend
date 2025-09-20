@@ -76,7 +76,8 @@
         let isConnected = false;
 
         function connectToServer() {
-            const socket = new WebSocket("wss://anonchat-frontend-production.up.railway.app:8080");
+    socket = new WebSocket("wss://anonchat-frontend-qjo9.onrender.com");
+
 
             socket.onopen = function () {
                 console.log("Connected to WebSocket server");
@@ -134,7 +135,7 @@
                 sendMessage();
     }
 });
-     // Initial connection
+        // Initial connection
         connectToServer();
     </script>
 </body>
