@@ -1,27 +1,27 @@
 const WebSocket = require('ws');
 const express = require('express');
 const http = require('http');
+const path = require('path');
 
-// Use Railway's assigned port or fallback
+// Use Render's assigned port or fallback
 const PORT = process.env.PORT || 8080;
 
-// Create Express app for health checks
+// Create Express app
 const app = express();
 
-// Health check endpoint (required by some hosting providers)
+// Serve static files (HTML, CSS, JS)
+app.use(express.static(__dirname));
+
+// Health check endpoint
 app.get('/', (req, res) => {
-    res.json({ 
-        status: 'AnonTalk WebSocket Server Running',
-        connections: wss.clients.size,
-        timestamp: new Date().toISOString()
-    });
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'healthy',
         uptime: process.uptime(),
-        connections: wss.clients.size 
+        connections: wss ? wss.clients.size : 0
     });
 });
 
@@ -126,7 +126,7 @@ const interval = setInterval(() => {
         ws.isAlive = false;
         ws.ping();
     });
-}, 30000); // Check every 30 seconds
+}, 30000);
 
 // Cleanup on server shutdown
 wss.on('close', () => {
@@ -136,8 +136,8 @@ wss.on('close', () => {
 // Start the server
 server.listen(PORT, () => {
     console.log(`AnonTalk server running on port ${PORT}`);
+    console.log(`HTTP endpoint: http://localhost:${PORT}`);
     console.log(`WebSocket endpoint: ws://localhost:${PORT}`);
-    console.log(`Health check: http://localhost:${PORT}/health`);
 });
 
 // Graceful shutdown
