@@ -1,5 +1,5 @@
 {
-  "name": "anonchat-backend",
+  "name": "anonchat-backend", 
   "version": "1.0.0",
   "description": "WebSocket server for anonymous chat",
   "main": "server.js",
