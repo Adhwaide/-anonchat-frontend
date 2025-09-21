@@ -3,140 +3,825 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnonTalk Chat</title>
+    <title>AnonTalk Chat - Safe Anonymous Chat</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
         }
+
         .chat-container {
-            width: 90%;
-            max-width: 500px;
-            background-color: #fff;
-            padding: 20px;
-            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            text-align: center;
+            width: 95%;
+            max-width: 800px;
+            height: 90vh;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
-        .messages {
-            border: 1px solid #ccc;
-            height: 300px;
-            overflow-y: auto;
-            padding: 10px;
-            margin-bottom: 10px;
-            background: #fafafa;
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        input {
-            width: 70%;
-            padding: 10px;
-            margin-right: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+
+        .chat-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        .send-btn, .connect-btn {
-            padding: 10px 15px;
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4757;
+        }
+
+        .status-indicator.connected {
+            background: #2ed573;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .control-btn {
+            background: rgba(255,255,255,0.2);
             border: none;
+            color: white;
+            padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .control-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            max-width: 80%;
+            position: relative;
+        }
+
+        .message.you {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.stranger {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .message.system {
+            background: #fff3cd;
+            color: #856404;
+            text-align: center;
+            font-style: italic;
+            max-width: 100%;
+            margin: 10px auto;
+        }
+
+        .message.warning {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message-options {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .message:hover .message-options {
+            opacity: 1;
+        }
+
+        .chat-input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 25px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .message-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .send-btn:hover {
+            background: #218838;
+        }
+
+        .send-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .new-chat-btn {
+            background: #17a2b8;
             color: white;
         }
-        .send-btn {
-            background-color: green;
+
+        .new-chat-btn:hover {
+            background: #138496;
         }
-        .send-btn:hover {
-            background-color: #45a049;
+
+        .report-btn {
+            background: #dc3545;
+            color: white;
         }
-        .connect-btn {
-            background-color: red;
+
+        .report-btn:hover {
+            background: #c82333;
         }
-        .connect-btn.connected {
-            background-color: green;
+
+        .share-btn {
+            background: #6f42c1;
+            color: white;
+        }
+
+        .share-btn:hover {
+            background: #5a2d91;
+        }
+
+        .disconnect-btn {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .disconnect-btn:hover {
+            background: #e8650e;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .report-options {
+            display: grid;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .report-option {
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .report-option:hover {
+            border-color: #dc3545;
+            background: #f8f9fa;
+        }
+
+        .report-option.selected {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .share-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .share-option {
+            padding: 15px;
+            text-align: center;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .share-option:hover {
+            border-color: #6f42c1;
+            background: #f8f9fa;
+        }
+
+        .interest-match {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .chat-container {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
-        <h2>AnonTalk Chat</h2>
-        <div class="messages" id="messages">
-            <p><em>Waiting for a partner to connect...</em></p>
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="chat-info">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Connecting...</span>
+                <span id="chatType"></span>
+            </div>
+            <div class="header-controls">
+                <span id="onlineCount">-- online</span>
+                <button class="control-btn" onclick="toggleSound()">🔊</button>
+                <button class="control-btn" onclick="goHome()">🏠</button>
+            </div>
         </div>
-        <input type="text" id="messageInput" placeholder="Type a message..." />
-        <button class="send-btn" onclick="sendMessage()">Send</button>
-        <button id="connectBtn" class="connect-btn" onclick="toggleConnection()">Disconnect</button>
+
+        <!-- Messages Area -->
+        <div class="messages" id="messagesContainer">
+            <div class="message system">
+                <p>Welcome to AnonTalk! 🛡️ This is a safe space for anonymous conversations.</p>
+                <p>Please be respectful and follow our community guidelines.</p>
+            </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input-area">
+            <div class="input-container">
+                <input type="text" class="message-input" id="messageInput" 
+                       placeholder="Type your message..." maxlength="500">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn new-chat-btn" onclick="findNewChat()">New Chat</button>
+                <button class="action-btn report-btn" onclick="showReportModal()">Report User</button>
+                <button class="action-btn share-btn" onclick="showShareModal()">Share Chat</button>
+                <button class="action-btn disconnect-btn" onclick="disconnect()">Disconnect</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('reportModal')">&times;</span>
+            <h2>Report Inappropriate Behavior</h2>
+            <p>Help us keep AnonTalk safe. What happened?</p>
+            <div class="report-options">
+                <div class="report-option" onclick="selectReportReason('spam')">
+                    <strong>Spam or Advertising</strong>
+                    <p>Sending promotional content or repetitive messages</p>
+                </div>
+                <div class="report-option" onclick="selectReportReason('harassment')">
+                    <strong>Harassment or Bullying</strong>
+                    <p>Threatening, intimidating, or abusive behavior</p>
+                </div>
+                <div class="report-option" onclick="selectReportReason('inappropriate')">
+                    <strong>Inappropriate Content</strong>
+                    <p>Sexual content, violence, or other inappropriate material</p>
+                </div>
+                <div class="report-option" onclick="selectReportReason('underage')">
+                    <strong>Underage User</strong>
+                    <p>User appears to be under 13 years old</p>
+                </div>
+                <div class="report-option" onclick="selectReportReason('other')">
+                    <strong>Other</strong>
+                    <p>Something else that violates our guidelines</p>
+                </div>
+            </div>
+            <button onclick="submitReport()" style="background: #dc3545; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; width: 100%;">
+                Submit Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('shareModal')">&times;</span>
+            <h2>Share This Great Conversation</h2>
+            <p>Spread the word about AnonTalk! (No personal information will be shared)</p>
+            <div class="share-options">
+                <div class="share-option" onclick="shareToSocial('twitter')">
+                    <strong>Share on Twitter</strong>
+                    <p>Tweet about your experience</p>
+                </div>
+                <div class="share-option" onclick="shareToSocial('facebook')">
+                    <strong>Share on Facebook</strong>
+                    <p>Post to your timeline</p>
+                </div>
+                <div class="share-option" onclick="shareToSocial('copy')">
+                    <strong>Copy Link</strong>
+                    <p>Copy referral link to clipboard</p>
+                </div>
+                <div class="share-option" onclick="shareToSocial('whatsapp')">
+                    <strong>Share on WhatsApp</strong>
+                    <p>Send to friends and family</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         let socket;
         let isConnected = false;
+        let currentPartner = null;
+        let chatHistory = [];
+        let selectedReportReason = null;
+        let userPreferences = {};
+        let chatStartTime = null;
+        let messageCount = 0;
 
+        // Load user preferences
+        const storedPrefs = localStorage.getItem('userPreferences');
+        if (storedPrefs) {
+            userPreferences = JSON.parse(storedPrefs);
+            document.getElementById('chatType').textContent = 
+                userPreferences.chatType === 'adult' ? '(18+ Chat)' : '(General Chat)';
+        } else {
+            // Redirect back if no preferences
+            window.location.href = 'index.html';
+        }
+
+        // WebSocket connection
         function connectToServer() {
-    socket = new WebSocket("wss://anonchat-frontend-qjo9.onrender.com");
+            socket = new WebSocket("wss://anonchat-frontend-qjo9.onrender.com");
 
-
-            socket.onopen = function () {
+            socket.onopen = function() {
                 console.log("Connected to WebSocket server");
-                document.getElementById("messages").innerHTML = "<p><em>Connected to chat. Finding a partner...</em></p>";
-                document.getElementById("connectBtn").innerText = "Disconnect";
-                document.getElementById("connectBtn").classList.add("connected");
-                isConnected = true;
-            };
-
-            socket.onmessage = function (event) {
-                const messagesDiv = document.getElementById("messages");
+                updateStatus("Finding a match...", false);
                 
-                if (event.data === "partner_disconnected") {
-                    messagesDiv.innerHTML += "<p><em>Your partner has disconnected.</em></p>";
-                    document.getElementById("connectBtn").innerText = "Connect";
-                    document.getElementById("connectBtn").classList.remove("connected");
-                    isConnected = false;
-                } else {
-                    messagesDiv.innerHTML += `<p>${event.data}</p>`;
+                // Send user preferences for matching
+                socket.send(JSON.stringify({
+                    type: 'user_preferences',
+                    data: userPreferences
+                }));
+            };
+
+            socket.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleMessage(data);
+                } catch (e) {
+                    // Handle plain text messages (backward compatibility)
+                    handleLegacyMessage(event.data);
                 }
-
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
             };
 
-            socket.onclose = function () {
+            socket.onclose = function() {
                 console.log("Disconnected from WebSocket server");
-                document.getElementById("messages").innerHTML += "<p><em>Disconnected</em></p>";
-                document.getElementById("connectBtn").innerText = "Connect";
-                document.getElementById("connectBtn").classList.remove("connected");
-                isConnected = false;
+                updateStatus("Disconnected", false);
+                showSystemMessage("Connection lost. Please refresh the page.");
             };
+
+            socket.onerror = function(error) {
+                console.error("WebSocket error:", error);
+                showSystemMessage("Connection error occurred.");
+            };
+        }
+
+        function handleMessage(data) {
+            switch(data.type) {
+                case 'partner_found':
+                    handlePartnerFound(data.data);
+                    break;
+                case 'partner_message':
+                    displayMessage('stranger', data.data.message);
+                    break;
+                case 'partner_disconnected':
+                    handlePartnerDisconnected();
+                    break;
+                case 'interest_match':
+                    showInterestMatch(data.data.interests);
+                    break;
+                case 'moderation_warning':
+                    showModerationWarning(data.data.warning);
+                    break;
+                case 'user_reported':
+                    showSystemMessage("Thank you for your report. Our moderation team will review it.");
+                    break;
+                default:
+                    console.log('Unknown message type:', data.type);
+            }
+        }
+
+        function handleLegacyMessage(message) {
+            if (message === "partner_disconnected") {
+                handlePartnerDisconnected();
+            } else if (message.includes("You are now connected")) {
+                updateStatus("Connected to stranger", true);
+                chatStartTime = Date.now();
+            } else if (message.includes("Waiting for a partner")) {
+                updateStatus("Finding a match...", false);
+            } else {
+                displayMessage('stranger', message);
+            }
+        }
+
+        function handlePartnerFound(data) {
+            currentPartner = data.partnerId;
+            updateStatus("Connected to stranger", true);
+            chatStartTime = Date.now();
+            
+            if (data.commonInterests && data.commonInterests.length > 0) {
+                showInterestMatch(data.commonInterests);
+            }
+            
+            showSystemMessage("Connected! Say hello 👋");
+        }
+
+        function handlePartnerDisconnected() {
+            const chatDuration = chatStartTime ? Math.floor((Date.now() - chatStartTime) / 1000) : 0;
+            
+            updateStatus("Partner disconnected", false);
+            showSystemMessage(`Your partner has disconnected. Chat lasted ${formatDuration(chatDuration)}.`);
+            
+            currentPartner = null;
+            chatStartTime = null;
+            
+            // Auto-find new chat after 3 seconds
+            setTimeout(() => {
+                if (!isConnected) {
+                    findNewChat();
+                }
+            }, 3000);
+        }
+
+        function showInterestMatch(interests) {
+            const matchDiv = document.createElement('div');
+            matchDiv.className = 'interest-match';
+            matchDiv.innerHTML = `🎯 Great! You both like: <strong>${interests.join(', ')}</strong>`;
+            document.getElementById('messagesContainer').appendChild(matchDiv);
+            scrollToBottom();
+        }
+
+        function showModerationWarning(warning) {
+            const warningMsg = document.createElement('div');
+            warningMsg.className = 'message warning';
+            warningMsg.innerHTML = `⚠️ <strong>Moderation Warning:</strong> ${warning}`;
+            document.getElementById('messagesContainer').appendChild(warningMsg);
+            scrollToBottom();
+        }
+
+        function updateStatus(text, connected) {
+            document.getElementById('statusText').textContent = text;
+            const indicator = document.getElementById('statusIndicator');
+            
+            if (connected) {
+                indicator.classList.add('connected');
+                isConnected = true;
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('messageInput').disabled = false;
+            } else {
+                indicator.classList.remove('connected');
+                isConnected = false;
+                document.getElementById('sendBtn').disabled = true;
+                document.getElementById('messageInput').disabled = true;
+            }
+        }
+
+        function displayMessage(sender, message) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            if (sender === 'stranger') {
+                messageDiv.innerHTML = `
+                    <div>${message}</div>
+                    <div class="message-options" onclick="showReportModal()" title="Report this message">
+                        ⚠️
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `<div>${message}</div>`;
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            chatHistory.push({sender, message, timestamp: Date.now()});
+            messageCount++;
+            scrollToBottom();
+        }
+
+        function showSystemMessage(message) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system';
+            messageDiv.innerHTML = `<p>${message}</p>`;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
         }
 
         function sendMessage() {
-            const input = document.getElementById("messageInput");
-            if (input.value.trim() !== "" && isConnected) {
-                socket.send(input.value);
-                document.getElementById("messages").innerHTML += `<p><strong>You:</strong> ${input.value}</p>`;
-                input.value = "";
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message && isConnected) {
+                socket.send(JSON.stringify({
+                    type: 'chat_message',
+                    data: { message: message }
+                }));
+                
+                displayMessage('you', message);
+                input.value = '';
             }
         }
 
-        function toggleConnection() {
-            if (isConnected) {
-                socket.send("partner_disconnected"); // Notify partner
-                socket.close(); // Disconnect from server
-            } else {
-                document.getElementById("messages").innerHTML = "<p><em>Waiting for a partner to connect...</em></p>";
-                connectToServer(); // Reconnect to server and find new partner
+        function findNewChat() {
+            if (currentPartner) {
+                socket.send(JSON.stringify({
+                    type: 'disconnect_partner',
+                    data: {}
+                }));
+            }
+            
+            updateStatus("Finding new match...", false);
+            showSystemMessage("Looking for a new conversation partner...");
+            
+            // Clear chat history
+            const messages = document.querySelectorAll('.message:not(.system)');
+            messages.forEach(msg => msg.remove());
+            
+            chatHistory = [];
+            messageCount = 0;
+            currentPartner = null;
+            chatStartTime = null;
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.close();
+            }
+            window.location.href = 'index.html';
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('messagesContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return minutes > 0 ? `${minutes}m ${remainingSeconds}s` : `${remainingSeconds}s`;
+        }
+
+        // Modal functions
+        function showReportModal() {
+            if (!currentPartner) {
+                alert('No active chat to report.');
+                return;
+            }
+            document.getElementById('reportModal').style.display = 'block';
+        }
+
+        function showShareModal() {
+            document.getElementById('shareModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            selectedReportReason = null;
+            
+            // Remove selected class from report options
+            document.querySelectorAll('.report-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+        }
+
+        function selectReportReason(reason) {
+            selectedReportReason = reason;
+            
+            // Update UI
+            document.querySelectorAll('.report-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+
+        function submitReport() {
+            if (!selectedReportReason) {
+                alert('Please select a reason for reporting.');
+                return;
+            }
+            
+            socket.send(JSON.stringify({
+                type: 'report_user',
+                data: {
+                    partnerId: currentPartner,
+                    reason: selectedReportReason,
+                    chatHistory: chatHistory.slice(-10) // Last 10 messages for context
+                }
+            }));
+            
+            closeModal('reportModal');
+            showSystemMessage("Report submitted. Thank you for helping keep AnonTalk safe.");
+            
+            // Disconnect from current partner
+            findNewChat();
+        }
+
+        function shareToSocial(platform) {
+            const referralCode = localStorage.getItem('referralCode') || 'ANONTALK';
+            const shareUrl = `${window.location.origin}?ref=${referralCode}`;
+            
+            const messages = {
+                twitter: `Just had an amazing anonymous chat on AnonTalk! Safe, fun, and you can meet people from around the world. Join me: ${shareUrl}`,
+                facebook: `Found this cool anonymous chat platform - AnonTalk! It's safe, moderated, and great for meeting new people. Check it out: ${shareUrl}`,
+                whatsapp: `Hey! Try this anonymous chat app I found - AnonTalk. It's really fun and safe to use: ${shareUrl}`,
+                copy: shareUrl
+            };
+            
+            const message = messages[platform];
+            
+            switch(platform) {
+                case 'twitter':
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`, '_blank');
+                    break;
+                case 'facebook':
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(message)}`, '_blank');
+                    break;
+                case 'whatsapp':
+                    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+                    break;
+                case 'copy':
+                    navigator.clipboard.writeText(message);
+                    alert('Link copied to clipboard!');
+                    break;
+            }
+            
+            closeModal('shareModal');
+        }
+
+        function toggleSound() {
+            // Placeholder for sound toggle functionality
+            alert('Sound notifications coming soon!');
+        }
+
+        function goHome() {
+            if (confirm('Are you sure you want to leave this chat?')) {
+                disconnect();
             }
         }
-        // Send message when Enter is pressed
-        document.getElementById("messageInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
+
+        // Event listeners
+        document.getElementById('messageInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
                 sendMessage();
-    }
-});
-        // Initial connection
+            }
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const reportModal = document.getElementById('reportModal');
+            const shareModal = document.getElementById('shareModal');
+            
+            if (event.target === reportModal) {
+                closeModal('reportModal');
+            }
+            if (event.target === shareModal) {
+                closeModal('shareModal');
+            }
+        };
+
+        // Initialize connection
         connectToServer();
+
+        // Update online count periodically (mock data)
+        setInterval(() => {
+            document.getElementById('onlineCount').textContent = (Math.floor(Math.random() * 500) + 50) + ' online';
+        }, 30000);
     </script>
 </body>
 </html>
