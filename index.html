@@ -3,60 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnonTalk - Anonymous Chat</title>
+    <title>AnonTalk - Safe Anonymous Chat</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-        }
-        .container {
-            text-align: center;
-            background-color: #fff;
-            padding: 30px;
-            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-        h1 {
             color: #333;
-            font-size: 2rem;
-            margin-bottom: 20px;
         }
-        p {
-            color: #555;
-            font-size: 1rem;
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: #666;
             margin-bottom: 30px;
+            font-size: 1.1rem;
         }
+
+        .safety-badge {
+            background: #e8f5e8;
+            color: #2d5a2d;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+            border: 2px solid #a8d8a8;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .age-verification {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .connect-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
         .connect-btn {
-            padding: 10px 20px;
-            font-size: 1.2rem;
-            color: #fff;
-            background-color: green;
+            padding: 15px 25px;
+            font-size: 1.1rem;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            font-weight: bold;
         }
-        .connect-btn:hover {
-            background-color: #45a049;
+
+        .general-chat {
+            background: #28a745;
+            color: white;
+        }
+
+        .general-chat:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .adult-chat {
+            background: #dc3545;
+            color: white;
+        }
+
+        .adult-chat:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .referral-section {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .referral-code {
+            background: white;
+            padding: 10px;
+            border: 2px dashed #2196f3;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .safety-info {
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: left;
+            margin: 20px 0;
+        }
+
+        .safety-info h3 {
+            color: #0066cc;
+            margin-bottom: 10px;
+        }
+
+        .safety-info ul {
+            margin-left: 20px;
+        }
+
+        .safety-info li {
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        @media (max-width: 600px) {
+            .connect-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to AnonTalk</h1>
-        <p>Connect with strangers anonymously in real-time.</p>
-        <button class="connect-btn" onclick="goToChat()">Connect Now</button>
+        <div class="logo">AnonTalk</div>
+        <div class="tagline">Connect safely with strangers worldwide</div>
+        <div class="safety-badge">🛡️ Safe & Moderated Platform</div>
+
+        <!-- Live Stats -->
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="onlineUsers">--</div>
+                <div class="stat-label">Users Online</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalChats">--</div>
+                <div class="stat-label">Chats Today</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="avgChatTime">--</div>
+                <div class="stat-label">Avg Chat Time</div>
+            </div>
+        </div>
+
+        <!-- Interest Matching -->
+        <div class="input-group">
+            <label for="interests">Your Interests (optional):</label>
+            <input type="text" id="interests" placeholder="e.g., music, gaming, travel, movies" 
+                   title="Enter interests separated by commas to find like-minded people">
+        </div>
+
+        <!-- Age Verification -->
+        <div class="input-group">
+            <label for="ageRange">Age Range:</label>
+            <select id="ageRange" required>
+                <option value="">Select your age range</option>
+                <option value="13-17">13-17 years</option>
+                <option value="18-24">18-24 years</option>
+                <option value="25-34">25-34 years</option>
+                <option value="35+">35+ years</option>
+            </select>
+        </div>
+
+        <div class="age-verification">
+            <strong>⚠️ Age Verification Required</strong>
+            <p>By proceeding, you confirm that you are at least 13 years old and agree to our community guidelines.</p>
+        </div>
+
+        <!-- Connect Options -->
+        <div class="connect-options">
+            <button class="connect-btn general-chat" onclick="startChat('general')">
+                General Chat (PG-13)
+            </button>
+            <button class="connect-btn adult-chat" onclick="startChat('adult')">
+                Adult Chat (18+)
+            </button>
+        </div>
+
+        <!-- Referral System -->
+        <div class="referral-section">
+            <h3>🎁 Invite Friends & Get Premium Features</h3>
+            <p>Share your referral code and unlock premium features when friends join!</p>
+            <div class="referral-code" id="referralCode">Loading...</div>
+            <button onclick="copyReferralCode()" style="padding: 8px 16px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Copy Code
+            </button>
+        </div>
+
+        <!-- Safety Information -->
+        <div class="safety-info">
+            <h3>🛡️ Your Safety is Our Priority</h3>
+            <ul>
+                <li>AI-powered content moderation active 24/7</li>
+                <li>One-click reporting system</li>
+                <li>No personal information stored</li>
+                <li>Professional moderation team</li>
+                <li>Secure, encrypted connections</li>
+            </ul>
+        </div>
     </div>
 
     <script>
-        function goToChat() {
-            window.location.href = 'chat.html'; // Redirect to chat page
+        // Generate unique referral code
+        function generateReferralCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = 'AT-';
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
         }
+
+        // Initialize referral code
+        const userReferralCode = localStorage.getItem('referralCode') || generateReferralCode();
+        localStorage.setItem('referralCode', userReferralCode);
+        document.getElementById('referralCode').textContent = userReferralCode;
+
+        // Copy referral code
+        function copyReferralCode() {
+            navigator.clipboard.writeText(`Join me on AnonTalk for safe anonymous chat! Use code: ${userReferralCode} at ${window.location.origin}`);
+            alert('Referral link copied to clipboard!');
+        }
+
+        // Update live stats (mock data for now)
+        function updateStats() {
+            document.getElementById('onlineUsers').textContent = Math.floor(Math.random() * 500) + 50;
+            document.getElementById('totalChats').textContent = Math.floor(Math.random() * 2000) + 1000;
+            document.getElementById('avgChatTime').textContent = Math.floor(Math.random() * 20) + 5 + 'm';
+        }
+
+        // Start chat function
+        function startChat(type) {
+            const ageRange = document.getElementById('ageRange').value;
+            const interests = document.getElementById('interests').value;
+
+            if (!ageRange) {
+                alert('Please select your age range first.');
+                return;
+            }
+
+            if (type === 'adult' && (ageRange === '13-17')) {
+                alert('Adult chat is restricted to users 18+. Please use General Chat.');
+                return;
+            }
+
+            // Store user preferences
+            localStorage.setItem('userPreferences', JSON.stringify({
+                ageRange: ageRange,
+                interests: interests.toLowerCase().split(',').map(s => s.trim()).filter(s => s),
+                chatType: type,
+                referralCode: userReferralCode
+            }));
+
+            // Redirect to chat
+            window.location.href = 'chat.html';
+        }
+
+        // Check for referral code in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref');
+        if (refCode && refCode !== userReferralCode) {
+            localStorage.setItem('referredBy', refCode);
+            // Could track referrals here
+        }
+
+        // Initialize
+        updateStats();
+        setInterval(updateStats, 30000); // Update stats every 30 seconds
     </script>
 </body>
 </html>
